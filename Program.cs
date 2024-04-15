@@ -7,6 +7,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using Newtonsoft.Json.Linq;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using Validador.Clases;
@@ -22,13 +23,19 @@ namespace Validador
         {
             List<string> mlas = CargarMlasDesdeExcel(filePath, sheetName);
             Console.WriteLine($"\nCantidad de Publicaciones: {mlas.Count}");
+
+            int segundosCalculados = mlas.Count * 4;
+            TimeSpan tiempo = TimeSpan.FromSeconds(segundosCalculados);
+            Console.WriteLine($"Tiempo estimado de consulta: {tiempo.Hours} horas - {tiempo.Minutes} minutos - {tiempo.Seconds} segundos");
+
             while (true)
             {
-                foreach (string mla in mlas)
+                for (int i = 0; i < mlas.Count; i++)
                 {
-                    Console.WriteLine($" ---- \nConsultando publicacion: {mla}");
+                    string mla = mlas[i];
+                    Console.WriteLine($" ---- \nConsultando publicacion {i + 1}/{mlas.Count}: {mla}");
                     await ConsultarApiAsync(mla);
-                    await Task.Delay(4500);
+                    await Task.Delay(2000);
                 }
                 GuardarEnExcel();
 
@@ -62,7 +69,7 @@ namespace Validador
                     int mlaColumnNumber = 1;
 
                     // Número de la columna que contiene los valores a convertir a decimal (por ejemplo, columna B)
-                    int decimalColumnNumber = 2;    
+                    //int decimalColumnNumber = 2;
 
                     // Recorrer las filas para obtener los valores de la columna MLA y convertir la columna a decimal
                     for (int row = 2; row <= rowCount; row++) // Comenzamos desde la fila 2, asumiendo que la fila 1 son los encabezados
@@ -77,18 +84,18 @@ namespace Validador
                         }
 
                         // Convertir el valor de la celda de la columna a decimal si es posible
-                        ExcelRange cell = worksheet.Cells[row, decimalColumnNumber];
-                        if (cell.Value != null)
-                        {
-                            string cellValueAsString = cell.Value.ToString();
-                            if (double.TryParse(cellValueAsString, out double cellValueAsDouble))
-                            {
-                                cell.Style.Numberformat.Format = "0.00";
-                                // Si la conversión es exitosa, establece el nuevo valor de la celda como decimal
-                                cell.Value = cellValueAsDouble;
-                                
-                            }
-                        }
+                        //ExcelRange cell = worksheet.Cells[row, decimalColumnNumber];
+                        //if (cell.Value != null)
+                        //{
+                        //    string cellValueAsString = cell.Value.ToString();
+                        //    if (double.TryParse(cellValueAsString, out double cellValueAsDouble))
+                        //    {
+                        //        cell.Style.Numberformat.Format = "0.00";
+                        //        // Si la conversión es exitosa, establece el nuevo valor de la celda como decimal
+                        //        cell.Value = cellValueAsDouble;
+
+                        //    }
+                        //}
                     }
                     // Guardar los cambios en el archivo Excel
                     excelPackage.Save();
@@ -123,14 +130,22 @@ namespace Validador
                         string contenidoJson = await response.Content.ReadAsStringAsync();
                         Publicacion mercadoLibreItem = Newtonsoft.Json.JsonConvert.DeserializeObject<Publicacion>(contenidoJson);
                         itemsList.Add(mercadoLibreItem);
-                        //foreach (Variacion var in mercadoLibreItem.Variations)
+                        //if (mercadoLibreItem.Shipping == null)
                         //{
-                        //    string SKU = await ConsultarVariation(mercadoLibreItem.Id, var.Id);
-                        //    await Task.Delay(2000);
-                        //    var.SKU = SKU;
-                        //    Console.WriteLine($"ID de variantes: {var.Id} | SKU: {var.SKU}");
+                        //    mercadoLibreItem.Shipping = new Shipping();
+                        //    mercadoLibreItem.Shipping.logistic_type = "No tiene";
                         //}
-                        Console.WriteLine($"-> Precio: {mercadoLibreItem.Price} | Precio base: {mercadoLibreItem.Base_price} | Status: {mercadoLibreItem.Status} | Es de catalogo: {mercadoLibreItem.Catalog_listing}");
+                        if (mercadoLibreItem.Variations != null)
+                        {
+                            foreach (Variacion var in mercadoLibreItem.Variations)
+                            {
+                                string SKU = await ConsultarVariation(mercadoLibreItem.Id, var.Id);
+                                await Task.Delay(2000);
+                                var.SKU = SKU;
+                                Console.WriteLine($"ID de variantes: {var.Id} | SKU: {var.SKU}");
+                            }
+                        }
+                        Console.WriteLine($"-> Precio: {mercadoLibreItem.Price} | Precio base: {mercadoLibreItem.Base_price} | Status: {mercadoLibreItem.Status} | Es de catalogo: {mercadoLibreItem.Catalog_listing} | Logistica: {mercadoLibreItem.Shipping.logistic_type}");
                     }
                     else
                     {
@@ -161,9 +176,7 @@ namespace Validador
                     {
                         string contenidoJson = await response.Content.ReadAsStringAsync();
                         Variacion variationJson = Newtonsoft.Json.JsonConvert.DeserializeObject<Variacion>(contenidoJson);
-                        string sku = variationJson.Attributes
-                            .FirstOrDefault(attr => attr.Id == "SELLER_SKU")?
-                            .Value_Name;
+                        string sku = variationJson.Attributes.FirstOrDefault(attr => attr.Id == "SELLER_SKU")?.Value_Name;
                         return sku;
                     }
                     else
@@ -195,52 +208,62 @@ namespace Validador
                 {
                     ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.FirstOrDefault(x => x.Name == "Test") ?? excelPackage.Workbook.Worksheets.Add("MercadoLibreItems");
 
-                    worksheet.Cells[1, 4].Value = "MLA";
-                    worksheet.Cells[1, 5].Value = "Precio";
-                    worksheet.Cells[1, 6].Value = "Estado";
-                    worksheet.Cells[1, 7].Value = "Catalogo";
-                    //worksheet.Cells[1, 8].Value = "Condicion";
+                    worksheet.Cells[1, 5].Value = "Es Full";
+                    worksheet.Cells[1, 6].Value = "MLA";
+                    worksheet.Cells[1, 7].Value = "Precio";
+                    worksheet.Cells[1, 8].Value = "Estado";
+                    worksheet.Cells[1, 9].Value = "Catalogo";
+                    //worksheet.Cells[1, 10].Value = "Condicion";
 
-                    //int maxVariationsCount = itemsList.Max(publicacion => publicacion.Variations.Count);
+                    int maxVariationsCount = itemsList.Where(publicacion => publicacion != null).Max(publicacion => publicacion.Variations?.Count ?? 0);
 
-                    //for (int i = 1; i <= maxVariationsCount; i++)
-                    //{
-                    //    worksheet.Cells[1, 6 + 2 * i].Value = $"ID Variante {i}";
-                    //    worksheet.Cells[1, 7 + 2 * i].Value = $"SKU {i}";
-                    //}
+                    for (int i = 1; i <= maxVariationsCount; i++)
+                    {
+                        worksheet.Cells[1, 9 + 2 * i].Value = $"ID Variante {i}";
+                        worksheet.Cells[1, 10 + 2 * i].Value = $"SKU {i}";
+                    }
 
                     int row = 2;
 
                     foreach (Publicacion item in itemsList)
                     {
-                        worksheet.Cells[row, 4].Value = item.Id;
-                        worksheet.Cells[row, 5].Value = item.Price;
-                        worksheet.Cells[row, 6].Value = item.Status;
-                        worksheet.Cells[row, 7].Value = item.Catalog_listing;
+                        worksheet.Cells[row, 5].Value = item.Shipping.logistic_type;
+                        worksheet.Cells[row, 6].Value = item.Id;
+                        worksheet.Cells[row, 7].Value = item.Price;
+                        worksheet.Cells[row, 8].Value = item.Status;
+                        worksheet.Cells[row, 9].Value = item.Catalog_listing;
 
-                        //int cellVarId = 8;
-                        //int cellVarSKU = 9;
+                        int cellVarId = 11;
+                        int cellVarSKU = 12;
 
-                        //foreach (Variacion variation in item.Variations)
-                        //{
-                        //    worksheet.Cells[row, cellVarId].Value = variation.Id;
-                        //    worksheet.Cells[row, cellVarSKU].Value = variation.SKU;
-                        //    cellVarId += 2;
-                        //    cellVarSKU += 2;
-                        //}
-
-                        decimal valorCeldaFila2 = Convert.ToDecimal(worksheet.Cells[row, 2].Value);
-
-                        if (item.Price == valorCeldaFila2)
+                        if (item.Variations != null && item.Variations.Count > 0)
+                        //if (item.Variations.Count > 0 && item.Variations != null)
                         {
-                            worksheet.Cells[row, 3].Value = "Correcto";
+                            if (item.Variations[0].SKU == null)
+                            {
+                                item.Variations[0].SKU = "no tiene SKU";
+                            }
+                            foreach (Variacion variation in item.Variations)
+                            {
+                                worksheet.Cells[row, cellVarId].Value = variation.Id;
+                                worksheet.Cells[row, cellVarSKU].Value = variation.SKU;
+                                cellVarId += 2;
+                                cellVarSKU += 2;
+                            }
+                            //decimal valorCeldaFila2 = Convert.ToDecimal(worksheet.Cells[row, 2].Value);
+                            if (item.Variations[0].SKU.Equals(worksheet.Cells[row, 3].Value))
+                            {
+                                worksheet.Cells[row, 4].Value = "Correcto";
+                            }
+                            else if (item.Variations[0].SKU.Equals("no tiene SKU"))
+                            {
+                                worksheet.Cells[row, 4].Value = "Cargar SKU";
+                            }
+                            else
+                            {
+                                worksheet.Cells[row, 4].Value = "Revisar SKU";
+                            }
                         }
-                        else
-                        {
-                            worksheet.Cells[row, 3].Value = "Revisar Precio";
-
-                        }
-
                         row++;
                     }
                         excelPackage.SaveAs(existingFile);

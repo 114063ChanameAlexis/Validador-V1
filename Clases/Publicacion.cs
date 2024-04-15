@@ -13,6 +13,13 @@ namespace Validador.Clases
         public string Base_price { get; set; }
         public string Status { get; set; }
         public string Catalog_listing { get; set; }
-        public List<Variacion> Variations { get; set; }       
+        public List<Variacion> Variations { get; set; }
+        // Propiedad Shipping
+        public Shipping Shipping { get; set; }
+        public Publicacion()
+        {
+            // Inicializar la propiedad Shipping
+            Shipping = new Shipping();
+        }
     }
 }

@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="Clases\Atributo.cs" />
     <Compile Include="Clases\Publicacion.cs" />
+    <Compile Include="Clases\Shipping.cs" />
     <Compile Include="Clases\Variacion.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
