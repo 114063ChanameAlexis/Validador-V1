@@ -135,17 +135,18 @@ namespace Validador
                         //    mercadoLibreItem.Shipping = new Shipping();
                         //    mercadoLibreItem.Shipping.logistic_type = "No tiene";
                         //}
-                        if (mercadoLibreItem.Variations != null)
-                        {
-                            foreach (Variacion var in mercadoLibreItem.Variations)
-                            {
-                                string SKU = await ConsultarVariation(mercadoLibreItem.Id, var.Id);
-                                await Task.Delay(2000);
-                                var.SKU = SKU;
-                                Console.WriteLine($"ID de variantes: {var.Id} | SKU: {var.SKU}");
-                            }
-                        }
-                        Console.WriteLine($"-> Precio: {mercadoLibreItem.Price} | Precio base: {mercadoLibreItem.Base_price} | Status: {mercadoLibreItem.Status} | Es de catalogo: {mercadoLibreItem.Catalog_listing} | Logistica: {mercadoLibreItem.Shipping.logistic_type}");
+
+                        //Alexis 13/06////////////if (mercadoLibreItem.Variations != null)
+                        ////////////{
+                        ////////////    foreach (Variacion var in mercadoLibreItem.Variations)
+                        ////////////    {
+                        ////////////        string SKU = await ConsultarVariation(mercadoLibreItem.Id, var.Id);
+                        ////////////        await Task.Delay(2000);
+                        ////////////        var.SKU = SKU;
+                        ////////////        Console.WriteLine($"ID de variantes: {var.Id} | SKU: {var.SKU}");
+                        ////////////    }
+                        ////////////}
+                        ////////////Console.WriteLine($"-> Precio: {mercadoLibreItem.Price} | Precio base: {mercadoLibreItem.Base_price} | Status: {mercadoLibreItem.Status} | Es de catalogo: {mercadoLibreItem.Catalog_listing} | Logistica: {mercadoLibreItem.Shipping.logistic_type}");
                     }
                     else
                     {

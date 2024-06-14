@@ -20,6 +20,6 @@ C:\Users\alexis.chaname\source\repos\Validador\Validador\bin\Debug\System.Numeri
 C:\Users\alexis.chaname\source\repos\Validador\Validador\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 C:\Users\alexis.chaname\source\repos\Validador\Validador\obj\Debug\Validador.csproj.AssemblyReference.cache
 C:\Users\alexis.chaname\source\repos\Validador\Validador\obj\Debug\Validador.csproj.CoreCompileInputs.cache
-C:\Users\alexis.chaname\source\repos\Validador\Validador\obj\Debug\Validador.csproj.CopyComplete
 C:\Users\alexis.chaname\source\repos\Validador\Validador\obj\Debug\Validador.exe
 C:\Users\alexis.chaname\source\repos\Validador\Validador\obj\Debug\Validador.pdb
+C:\Users\alexis.chaname\source\repos\Validador\Validador\obj\Debug\Validador.csproj.Up2Date
