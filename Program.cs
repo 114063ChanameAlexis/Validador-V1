@@ -125,35 +125,23 @@ namespace Validador
                 {
                     HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string contenidoJson = await response.Content.ReadAsStringAsync();
-                        Publicacion mercadoLibreItem = Newtonsoft.Json.JsonConvert.DeserializeObject<Publicacion>(contenidoJson);
-                        itemsList.Add(mercadoLibreItem);
-                        //if (mercadoLibreItem.Shipping == null)
-                        //{
-                        //    mercadoLibreItem.Shipping = new Shipping();
-                        //    mercadoLibreItem.Shipping.logistic_type = "No tiene";
-                        //}
+                    string contenidoJson = await response.Content.ReadAsStringAsync();
+                    dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(contenidoJson);
 
-                        //Alexis 13/06////////////if (mercadoLibreItem.Variations != null)
-                        ////////////{
-                        ////////////    foreach (Variacion var in mercadoLibreItem.Variations)
-                        ////////////    {
-                        ////////////        string SKU = await ConsultarVariation(mercadoLibreItem.Id, var.Id);
-                        ////////////        await Task.Delay(2000);
-                        ////////////        var.SKU = SKU;
-                        ////////////        Console.WriteLine($"ID de variantes: {var.Id} | SKU: {var.SKU}");
-                        ////////////    }
-                        ////////////}
-                        ////////////Console.WriteLine($"-> Precio: {mercadoLibreItem.Price} | Precio base: {mercadoLibreItem.Base_price} | Status: {mercadoLibreItem.Status} | Es de catalogo: {mercadoLibreItem.Catalog_listing} | Logistica: {mercadoLibreItem.Shipping.logistic_type}");
-                    }
-                    else
+                    if (jsonResponse.error == "not_found")
                     {
-                        Console.WriteLine($"Error en la solicitud para el item {mla}: {response.StatusCode} - {response.ReasonPhrase}");
+                        Console.WriteLine($"Error: Item {mla} no encontrado.");
                         Publicacion mercadoLibreItem = new Publicacion();
                         itemsList.Add(mercadoLibreItem);
+                        mercadoLibreItem.Status = "No existe la publicacion";
                     }
+
+                    else
+                    {
+                        Publicacion mercadoLibreItem = Newtonsoft.Json.JsonConvert.DeserializeObject<Publicacion>(contenidoJson);
+                        itemsList.Add(mercadoLibreItem);
+                    }
+
                 }
                 catch (Exception ex)
                 {
